@@ -11,37 +11,111 @@
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col">
 
-    <!-- Header -->
+    <!-- AUTHENTICATION & VERIFICATION OVERLAY MODAL -->
+    <div id="authOverlay" class="fixed inset-0 z-50 bg-slate-950/95 flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 p-6 rounded-2xl max-w-md w-full space-y-6 shadow-2xl text-center">
+            
+            <div class="flex justify-center">
+                <img src="logo.png" alt="ConicMaster Logo" class="w-16 h-16 rounded-full border-2 border-indigo-500 object-cover bg-white">
+            </div>
+
+            <div id="authHeader">
+                <h2 class="text-xl font-black text-white">ConicMaster Access Portal</h2>
+                <p class="text-xs text-slate-400 mt-1">Sign in or create a verified account to continue.</p>
+            </div>
+
+            <!-- TAB TOGGLE: LOGIN VS REGISTER -->
+            <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-700 text-xs">
+                <button onclick="switchAuthMode('login')" id="btnAuthLogin" class="w-1/2 py-2 font-bold rounded-lg bg-indigo-600 text-white transition">Sign In</button>
+                <button onclick="switchAuthMode('register')" id="btnAuthRegister" class="w-1/2 py-2 font-bold rounded-lg text-slate-400 hover:text-white transition">Create Account</button>
+            </div>
+
+            <!-- FORM 1: SIGN IN -->
+            <form id="formLogin" onsubmit="handleLogin(event)" class="space-y-3 text-left">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address:</label>
+                    <input type="email" id="loginEmail" required placeholder="name@school.edu.ph" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Password:</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg">Sign In</button>
+            </form>
+
+            <!-- FORM 2: CREATE ACCOUNT -->
+            <form id="formRegister" onsubmit="handleRegister(event)" class="hidden space-y-3 text-left">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name:</label>
+                    <input type="text" id="regName" required placeholder="Juan Dela Cruz" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address:</label>
+                    <input type="email" id="regEmail" required placeholder="name@school.edu.ph" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Select Role:</label>
+                    <select id="regRole" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100">
+                        <option value="student">Student</option>
+                        <option value="teacher">Teacher</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Password:</label>
+                    <input type="password" id="regPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100">
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-lg">Send Verification Code</button>
+            </form>
+
+            <!-- FORM 3: EMAIL OTP VERIFICATION STEP -->
+            <div id="formVerification" class="hidden space-y-4 text-left border-t border-slate-700 pt-4">
+                <div class="bg-indigo-950 border border-indigo-800 p-3 rounded-xl text-xs text-indigo-300">
+                    📧 A simulated 6-digit email verification code was sent to <strong id="verifyEmailTarget" class="text-white"></strong>.
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Enter 6-Digit Verification Code:</label>
+                    <input type="text" id="otpInput" maxlength="6" placeholder="123456" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-center text-lg font-mono tracking-widest text-emerald-400">
+                </div>
+                <button onclick="confirmEmailOTP()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition">Verify Email & Complete Registration</button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Application Header -->
     <header class="bg-indigo-900 border-b border-indigo-800 py-3 px-6 shadow-lg">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
             <div class="flex items-center gap-3">
-                <!-- App Logo -->
                 <img src="logo.png" alt="ConicMaster Logo" class="w-12 h-12 rounded-full border-2 border-indigo-400 shadow object-cover bg-white">
                 <div>
                     <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2">
-                        ConicMaster <span class="bg-indigo-600 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider">Teacher Device</span>
+                        ConicMaster <span id="userRoleBadge" class="bg-indigo-600 text-[10px] px-2 py-0.5 rounded uppercase tracking-wider">Guest</span>
                     </h1>
-                    <p class="text-indigo-300 text-xs">Interactive Pre-Calculus Teaching Hub & Analytics</p>
+                    <p id="userProfileLabel" class="text-indigo-300 text-xs">Pre-Calculus Interactive Learning Hub</p>
                 </div>
             </div>
-            <!-- Navigation Tabs -->
+
+            <!-- Role-Based Navigation Tabs -->
             <div class="mt-4 md:mt-0 flex flex-wrap gap-1 bg-indigo-950 p-1 rounded-xl border border-indigo-800">
                 <button onclick="switchTab('simulator')" id="btn-simulator" class="px-3 py-1.5 text-xs font-bold rounded-lg transition bg-indigo-600 text-white shadow">Simulator</button>
-                <button onclick="switchTab('lessons')" id="btn-lessons" class="px-3 py-1.5 text-xs font-bold rounded-lg transition text-indigo-300 hover:text-white">Lesson Notes</button>
-                <button onclick="switchTab('quiz')" id="btn-quiz" class="px-3 py-1.5 text-xs font-bold rounded-lg transition text-indigo-300 hover:text-white">Student Quiz</button>
-                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="px-3 py-1.5 text-xs font-bold rounded-lg transition text-emerald-400 hover:text-emerald-200">Teacher Dashboard</button>
+                <button onclick="switchTab('lessons')" id="btn-lessons" class="px-3 py-1.5 text-xs font-bold rounded-lg transition text-indigo-300 hover:text-white">Lesson Notes (Comprehensive)</button>
+                <button onclick="switchTab('quiz')" id="btn-quiz" class="px-3 py-1.5 text-xs font-bold rounded-lg transition text-indigo-300 hover:text-white">Interactive Quiz</button>
+                <!-- Teacher Only Tabs -->
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="hidden teacher-only px-3 py-1.5 text-xs font-bold rounded-lg transition text-emerald-400 hover:text-emerald-200">Teacher Dashboard</button>
+                
+                <button onclick="logout()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-rose-700 hover:bg-rose-600 text-white ml-2 transition">Sign Out</button>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
+    <!-- Main Workspace Container -->
     <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6">
 
-        <!-- TAB 1: SIMULATOR -->
+        <!-- TAB 1: SIMULATOR (Origin & Translated) -->
         <section id="tab-simulator" class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
             <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700 flex flex-col justify-between space-y-6">
                 <div>
-                    <h2 class="text-sm font-bold uppercase tracking-wider text-indigo-400 mb-4 border-b border-slate-700 pb-2">Conic Parameters</h2>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-indigo-400 mb-4 border-b border-slate-700 pb-2">Conic Parameters (Origin vs Translated)</h2>
                     
                     <div class="mb-4">
                         <label class="block text-xs font-semibold text-slate-300 mb-1">Select Conic Section:</label>
@@ -71,110 +145,195 @@
             </div>
         </section>
 
-        <!-- TAB 2: LESSON CONTENT & REVIEW MODULE -->
+        <!-- TAB 2: LESSON NOTES (Comprehensive Worked Solutions for all 20 Examples) -->
         <section id="tab-lessons" class="hidden space-y-6">
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700">
-                <h2 class="text-xl font-bold text-white mb-2">Teacher's Pedagogical Lesson Guide & Student Review Module</h2>
-                <p class="text-slate-400 text-sm mb-6">Complete standard equations, core properties, and worked examples for student review.</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Circle -->
-                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 flex flex-col justify-between space-y-4">
-                        <div>
-                            <h3 class="text-indigo-400 font-bold text-base mb-1">1. The Circle</h3>
-                            <p class="text-xs text-slate-300 mb-3">Locus of points equidistant from a fixed center.</p>
-                            <div class="space-y-1.5 text-xs font-mono bg-slate-800 p-3 rounded text-indigo-200 mb-3">
-                                <div><strong>Origin (0,0):</strong> x² + y² = r²</div>
-                                <div><strong>Translated (h,k):</strong> (x - h)² + (y - k)² = r²</div>
-                            </div>
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 space-y-8">
+                <div>
+                    <h2 class="text-xl font-bold text-white mb-2">Teacher's Pedagogical Lesson Guide & Review Module</h2>
+                    <p class="text-slate-400 text-sm">Comprehensive review notes with complete, step-by-step mathematical solutions for all 20 conic section examples.</p>
+                </div>
+
+                <!-- 1. THE CIRCLE (5 Comprehensive Examples) -->
+                <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 space-y-4">
+                    <h3 class="text-indigo-400 font-bold text-lg border-b border-slate-800 pb-2">1. The Circle (Complete Solutions)</h3>
+                    <div class="text-xs font-mono bg-slate-800 p-3 rounded text-indigo-200">
+                        Formulas: Origin: $x^2 + y^2 = r^2$ &nbsp;|&nbsp; Translated: $(x - h)^2 + (y - k)^2 = r^2$
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 1: Standard Equation at Origin</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the standard equation of a circle with center at $(0,0)$ and radius $r = 5$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Use origin formula: $x^2 + y^2 = r^2$<br>2. Substitute $r = 5$: $x^2 + y^2 = 5^2$<br><strong>Final Answer: $x^2 + y^2 = 25$</strong></p>
                         </div>
-                        <div class="bg-slate-800/80 border border-slate-700 p-3.5 rounded-lg text-xs space-y-1.5">
-                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[10px]">Review Example</span>
-                            <p class="text-slate-300"><strong>Problem:</strong> Find the standard equation of a circle with center at (3, -2) and radius r = 4.</p>
-                            <p class="text-indigo-200 font-mono"><strong>Solution:</strong> (x - 3)² + (y - (-2))² = 4²<br><strong>Answer: (x - 3)² + (y + 2)² = 16</strong></p>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 2: Translated Center Equation</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the equation of a circle with center at $(2, -3)$ and radius $r = 4$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Use translated formula: $(x - h)^2 + (y - k)^2 = r^2$<br>2. Substitute $h = 2, k = -3, r = 4$: $(x - 2)^2 + (y - (-3))^2 = 4^2$<br><strong>Final Answer: $(x - 2)^2 + (y + 3)^2 = 16$</strong></p>
+                        </div>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 3: Extracting Radius from Equation</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the radius of the circle given by $x^2 + y^2 = 49$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Compare with $x^2 + y^2 = r^2$<br>2. Thus, $r^2 = 49 \implies r = \sqrt{49} = 7$<br><strong>Final Answer: Radius $r = 7$</strong></p>
+                        </div>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 4: Circle with Radical Radius</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Write the equation of a circle with center $(-1, 5)$ and radius $r = \sqrt{3}$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Substitute $h = -1, k = 5, r = \sqrt{3}$ into $(x - h)^2 + (y - k)^2 = r^2$<br>2. $(x - (-1))^2 + (y - 5)^2 = (\sqrt{3})^2$<br><strong>Final Answer: $(x + 1)^2 + (y - 5)^2 = 3$</strong></p>
+                        </div>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 5: Identifying Center Coordinates</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the center $(h, k)$ of the circle $(x - 3)^2 + (y + 2)^2 = 81$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Match $(x - 3)$ with $(x - h) \implies h = 3$<br>2. Match $(y + 2)$ with $(y - k) \implies y - (-2) \implies k = -2$<br><strong>Final Answer: Center is $(3, -2)$</strong></p>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Parabola -->
-                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 flex flex-col justify-between space-y-4">
-                        <div>
-                            <h3 class="text-indigo-400 font-bold text-base mb-1">2. The Parabola</h3>
-                            <p class="text-xs text-slate-300 mb-3">Equidistant from focus point and directrix line.</p>
-                            <div class="space-y-1.5 text-xs font-mono bg-slate-800 p-3 rounded text-indigo-200 mb-3">
-                                <div><strong>Origin (0,0):</strong> y² = 4px or x² = 4py</div>
-                                <div><strong>Translated (h,k):</strong> (y - k)² = 4p(x - h)</div>
-                            </div>
+                <!-- 2. THE PARABOLA (5 Comprehensive Examples) -->
+                <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 space-y-4">
+                    <h3 class="text-indigo-400 font-bold text-lg border-b border-slate-800 pb-2">2. The Parabola (Complete Solutions)</h3>
+                    <div class="text-xs font-mono bg-slate-800 p-3 rounded text-indigo-200">
+                        Formulas: Origin: $y^2 = 4px$ &nbsp;|&nbsp; Translated: $(y - k)^2 = 4p(x - h)$
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 1: Finding Focal Parameter $p$</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the focal length parameter $p$ for the parabola $y^2 = 12x$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Compare $y^2 = 12x$ with standard form $y^2 = 4px$<br>2. Set $4p = 12 \implies p = \frac{12}{4} = 3$<br><strong>Final Answer: $p = 3$</strong></p>
                         </div>
-                        <div class="bg-slate-800/80 border border-slate-700 p-3.5 rounded-lg text-xs space-y-1.5">
-                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[10px]">Review Example</span>
-                            <p class="text-slate-300"><strong>Problem:</strong> Find the vertex of the parabola: (y - 1)² = 12(x + 2).</p>
-                            <p class="text-indigo-200 font-mono"><strong>Solution:</strong> Match with (y - k)² = 4p(x - h).<br><strong>Answer: Vertex is at (-2, 1)</strong></p>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 2: Writing Translated Parabola Equation</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the equation of a horizontal parabola with vertex $(-2, 1)$ and $p = 2$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Use $(y - k)^2 = 4p(x - h)$. Here $h = -2, k = 1, p = 2$.<br>2. $(y - 1)^2 = 4(2)(x - (-2)) \implies (y - 1)^2 = 8(x + 2)$<br><strong>Final Answer: $(y - 1)^2 = 8(x + 2)$</strong></p>
+                        </div>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 3: Extracting Vertex Coordinates</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the vertex of the parabola $(x - 4)^2 = 16(y + 1)$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Vertical form: $(x - h)^2 = 4p(y - k)$<br>2. Extract $h = 4$ and $y - (-1) \implies k = -1$<br><strong>Final Answer: Vertex is $(4, -1)$</strong></p>
+                        </div>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 4: Finding Directrix Equation</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the directrix equation for the parabola $y^2 = 8x$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Find $p$: $4p = 8 \implies p = 2$<br>2. Horizontal parabola directrix formula is $x = -p$<br><strong>Final Answer: Directrix is $x = -2$</strong></p>
+                        </div>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 5: Finding Focus Coordinates</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the focus coordinates for the vertical parabola $x^2 = 16y$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Find $p$: $4p = 16 \implies p = 4$<br>2. Vertical parabola focus at origin is $(0, p)$<br><strong>Final Answer: Focus is $(0, 4)$</strong></p>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Ellipse -->
-                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 flex flex-col justify-between space-y-4">
-                        <div>
-                            <h3 class="text-indigo-400 font-bold text-base mb-1">3. The Ellipse</h3>
-                            <p class="text-xs text-slate-300 mb-3">Sum of distances from two foci to any point is constant.</p>
-                            <div class="space-y-1.5 text-xs font-mono bg-slate-800 p-3 rounded text-indigo-200 mb-3">
-                                <div><strong>Origin (0,0):</strong> (x² / a²) + (y² / b²) = 1</div>
-                                <div><strong>Translated (h,k):</strong> ((x - h)² / a²) + ((y - k)² / b²) = 1</div>
-                            </div>
+                <!-- 3. THE ELLIPSE (5 Comprehensive Examples) -->
+                <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 space-y-4">
+                    <h3 class="text-indigo-400 font-bold text-lg border-b border-slate-800 pb-2">3. The Ellipse (Complete Solutions)</h3>
+                    <div class="text-xs font-mono bg-slate-800 p-3 rounded text-indigo-200">
+                        Formulas: Origin: $\frac{x^2}{a^2} + \frac{y^2}{b^2} = 1$ &nbsp;|&nbsp; Translated: $\frac{(x-h)^2}{a^2} + \frac{(y-k)^2}{b^2} = 1$
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 1: Standard Ellipse Equation at Origin</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Write the equation of an ellipse centered at $(0,0)$ with semi-major axis $a = 5$ and semi-minor axis $b = 3$ along the x-axis.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Use $\frac{x^2}{a^2} + \frac{y^2}{b^2} = 1$<br>2. Substitute $a^2 = 5^2 = 25$ and $b^2 = 3^2 = 9$<br><strong>Final Answer: $\frac{x^2}{25} + \frac{y^2}{9} = 1$</strong></p>
                         </div>
-                        <div class="bg-slate-800/80 border border-slate-700 p-3.5 rounded-lg text-xs space-y-1.5">
-                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[10px]">Review Example</span>
-                            <p class="text-slate-300"><strong>Problem:</strong> Determine the center and major axis of: ((x + 4)² / 25) + ((y - 3)² / 9) = 1.</p>
-                            <p class="text-indigo-200 font-mono"><strong>Solution:</strong> Center is (-4, 3), a² = 25 -> a = 5.<br><strong>Answer: Center = (-4, 3), Major Axis = 10</strong></p>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 2: Translated Ellipse Equation</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the ellipse equation with center $(-4, 3)$, $a = 5$, and $b = 3$ horizontally.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Use $\frac{(x-h)^2}{a^2} + \frac{(y-k)^2}{b^2} = 1$<br>2. Substitute $h = -4, k = 3, a = 5, b = 3$: $\frac{(x+4)^2}{25} + \frac{(y-3)^2}{9} = 1$<br><strong>Final Answer: $\frac{(x+4)^2}{25} + \frac{(y-3)^2}{9} = 1$</strong></p>
+                        </div>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 3: Calculating Major Axis Length</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> What is the length of the major axis of the ellipse in Example 2?</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. The major axis length is always $2a$<br>2. Given $a = 5$, calculate $2(5) = 10$<br><strong>Final Answer: Major axis length = $10$</strong></p>
+                        </div>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 4: Identifying Translated Ellipse Center</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the center of $\frac{(x-1)^2}{16} + \frac{(y+2)^2}{4} = 1$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Match $(x-1)$ to $(x-h) \implies h = 1$<br>2. Match $(y+2)$ to $(y-k) \implies y - (-2) \implies k = -2$<br><strong>Final Answer: Center is $(1, -2)$</strong></p>
+                        </div>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 5: Calculating Eccentricity ($e$)</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the eccentricity $e$ of an ellipse where focal distance $c = 4$ and semi-major axis $a = 5$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Eccentricity formula is $e = \frac{c}{a}$<br>2. Substitute $c = 4$ and $a = 5 \implies e = \frac{4}{5} = 0.8$<br><strong>Final Answer: Eccentricity $e = 0.8$</strong></p>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Hyperbola -->
-                    <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 flex flex-col justify-between space-y-4">
-                        <div>
-                            <h3 class="text-indigo-400 font-bold text-base mb-1">4. The Hyperbola</h3>
-                            <p class="text-xs text-slate-300 mb-3">Absolute difference of distances from two foci is constant.</p>
-                            <div class="space-y-1.5 text-xs font-mono bg-slate-800 p-3 rounded text-indigo-200 mb-3">
-                                <div><strong>Origin (0,0):</strong> (x² / a²) - (y² / b²) = 1</div>
-                                <div><strong>Translated (h,k):</strong> ((x - h)² / a²) - ((y - k)² / b²) = 1</div>
-                            </div>
+                <!-- 4. THE HYPERBOLA (5 Comprehensive Examples) -->
+                <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 space-y-4">
+                    <h3 class="text-indigo-400 font-bold text-lg border-b border-slate-800 pb-2">4. The Hyperbola (Complete Solutions)</h3>
+                    <div class="text-xs font-mono bg-slate-800 p-3 rounded text-indigo-200">
+                        Formulas: Origin: $\frac{x^2}{a^2} - \frac{y^2}{b^2} = 1$ &nbsp;|&nbsp; Translated: $\frac{(x-h)^2}{a^2} - \frac{(y-k)^2}{b^2} = 1$
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-1 gap-4">
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 1: Standard Hyperbola Equation at Origin</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Write the equation of a horizontal hyperbola centered at $(0,0)$ with $a = 3$ and $b = 4$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Use $\frac{x^2}{a^2} - \frac{y^2}{b^2} = 1$<br>2. Substitute $a^2 = 3^2 = 9$ and $b^2 = 4^2 = 16$<br><strong>Final Answer: $\frac{x^2}{9} - \frac{y^2}{16} = 1$</strong></p>
                         </div>
-                        <div class="bg-slate-800/80 border border-slate-700 p-3.5 rounded-lg text-xs space-y-1.5">
-                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[10px]">Review Example</span>
-                            <p class="text-slate-300"><strong>Problem:</strong> Identify the center of the hyperbola: ((x - 1)² / 9) - ((y + 2)² / 16) = 1.</p>
-                            <p class="text-indigo-200 font-mono"><strong>Solution:</strong> Extract h = 1 and k = -2.<br><strong>Answer: Center is at (1, -2)</strong></p>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 2: Translated Hyperbola Equation</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the hyperbola equation with center $(1, -2)$, $a = 3$, and $b = 4$ horizontally.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Use $\frac{(x-h)^2}{a^2} - \frac{(y-k)^2}{b^2} = 1$<br>2. Substitute $h = 1, k = -2, a = 3, b = 4$: $\frac{(x-1)^2}{9} - \frac{(y+2)^2}{16} = 1$<br><strong>Final Answer: $\frac{(x-1)^2}{9} - \frac{(y+2)^2}{16} = 1$</strong></p>
+                        </div>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 3: Calculating Transverse Axis Length</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> What is the transverse axis length of the hyperbola in Example 2?</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Transverse axis length is always $2a$<br>2. Given $a = 3$, calculate $2(3) = 6$<br><strong>Final Answer: Transverse axis length = $6$</strong></p>
+                        </div>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 4: Finding Asymptotes Equation</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the asymptotes of the hyperbola $\frac{x^2}{9} - \frac{y^2}{16} = 1$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Horizontal hyperbola asymptotes formula is $y = \pm \frac{b}{a}x$<br>2. Here $a = 3, b = 4 \implies y = \pm \frac{4}{3}x$<br><strong>Final Answer: Asymptotes are $y = \pm \frac{4}{3}x$</strong></p>
+                        </div>
+
+                        <div class="bg-slate-800 p-4 rounded-lg text-xs space-y-2 border border-slate-700">
+                            <span class="text-emerald-400 font-bold uppercase tracking-wider text-[11px]">Example 5: Identifying Translated Hyperbola Center</span>
+                            <p class="text-slate-300"><strong>Problem:</strong> Find the center of $\frac{(x+2)^2}{25} - \frac{(y-3)^2}{9} = 1$.</p>
+                            <p class="text-indigo-200 font-mono bg-slate-900 p-2.5 rounded"><strong>Step-by-Step Solution:</strong><br>1. Match $(x+2) \implies x - (-2) \implies h = -2$<br>2. Match $(y-3) \implies k = 3$<br><strong>Final Answer: Center is $(-2, 3)$</strong></p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- TAB 3: STUDENT QUIZ -->
-        <section id="tab-quiz" class="hidden max-w-2xl mx-auto bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl">
-            <div id="connectionLobby" class="space-y-6 py-4">
-                <div class="text-center space-y-2">
-                    <span class="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Live Classroom Mode</span>
-                    <h2 class="text-2xl font-black text-white">Connect to ConicMaster Quiz</h2>
-                    <p class="text-slate-400 text-xs">Enter your student details to join the live session and log your score to the teacher's dashboard.</p>
-                </div>
+        <!-- TAB 3: QUIZ (PIN-PROTECTED FOR STUDENTS) -->
+        <section id="tab-quiz" class="hidden max-w-2xl mx-auto bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-6">
+            
+            <!-- STUDENT PIN ENTRY SCREEN -->
+            <div id="studentPinGate" class="space-y-6 text-center py-4">
+                <span class="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Live Quiz Arena</span>
+                <h2 class="text-2xl font-black text-white">Enter Game PIN</h2>
+                <p class="text-slate-400 text-xs">Enter the 4-digit PIN broadcasted by your teacher to unlock this round.</p>
 
-                <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 space-y-4 max-w-md mx-auto">
+                <div class="bg-slate-900 p-5 rounded-xl border border-slate-700 space-y-4 max-w-sm mx-auto">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Student Full Name:</label>
-                        <input type="text" id="studentNameInput" placeholder="e.g., Juan Dela Cruz" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-xs text-slate-100 focus:ring-2 focus:ring-indigo-500">
+                        <label class="block text-xs font-semibold text-slate-300 mb-1">Teacher Game PIN:</label>
+                        <input type="text" id="gamePinInput" maxlength="4" placeholder="e.g., 8842" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-center text-xl font-mono tracking-widest text-indigo-400">
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-300 mb-1">Grade & Section:</label>
-                        <input type="text" id="studentSectionInput" placeholder="e.g., Grade 11 - STEM A" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-xs text-slate-100 focus:ring-2 focus:ring-indigo-500">
-                    </div>
-                    <button onclick="connectStudent()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition text-sm shadow-lg">Join Live Game & Start Quiz</button>
+                    <button onclick="verifyStudentGamePin()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl text-xs transition shadow-lg">Start Challenge</button>
                 </div>
             </div>
 
+            <!-- ACTIVE QUIZ GAME AREA -->
             <div id="quizGameArea" class="hidden space-y-4">
                 <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
                     <div>
-                        <h2 class="text-base font-bold text-white">Kahoot-Style Conic Challenge</h2>
+                        <h2 id="quizRoundBadgeTitle" class="text-base font-bold text-white">Conic Challenge</h2>
                         <p id="playerBadge" class="text-xs text-indigo-400 font-semibold"></p>
                     </div>
                     <span id="quizProgress" class="text-xs bg-indigo-600 text-white font-bold px-3 py-1 rounded-full">Question 1 of 10</span>
@@ -187,65 +346,73 @@
 
                 <div id="scoreScreen" class="hidden text-center py-8 space-y-4">
                     <div class="inline-block bg-indigo-600 text-white text-3xl font-black p-4 rounded-full mb-2">🏆</div>
-                    <h3 class="text-2xl font-bold text-white">Challenge Completed!</h3>
+                    <h3 class="text-2xl font-bold text-white">Round Completed!</h3>
                     <p id="finalScoreText" class="text-slate-300 text-sm"></p>
-                    <p class="text-emerald-400 text-xs font-semibold">Your score has been successfully sent to the Teacher Dashboard!</p>
-                    <button onclick="restartQuizSession()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-6 rounded-xl transition text-sm">Play Again (New Shuffle)</button>
+                    <p class="text-emerald-400 text-xs font-semibold">Your score has been logged to the Teacher Dashboard!</p>
                 </div>
             </div>
         </section>
 
-        <!-- TAB 4: TEACHER DASHBOARD & MONITORING -->
+        <!-- TAB 4: TEACHER DASHBOARD & GAME BROADCASTER (Teacher Only) -->
         <section id="tab-dashboard" class="hidden space-y-6">
-            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b border-slate-700 pb-4 gap-4">
-                    <div>
-                        <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                            <span>📊 Teacher Live Monitoring Dashboard</span>
-                        </h2>
-                        <p class="text-slate-400 text-xs mt-1">Real-time tracking of student quiz submissions and scores stored locally on this device.</p>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="loadDashboardData()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold py-2 px-4 rounded-lg transition">Refresh Table</button>
-                        <button onclick="clearDashboardData()" class="bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold py-2 px-4 rounded-lg transition">Clear Records</button>
-                    </div>
-                </div>
-
-                <!-- Dashboard Metrics Summary -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                        <span class="text-slate-400 text-xs uppercase font-bold">Total Submissions</span>
-                        <div id="statTotal" class="text-2xl font-black text-indigo-400 mt-1">0</div>
-                    </div>
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                        <span class="text-slate-400 text-xs uppercase font-bold">Class Average Score</span>
-                        <div id="statAvg" class="text-2xl font-black text-emerald-400 mt-1">0 / 10</div>
-                    </div>
-                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                        <span class="text-slate-400 text-xs uppercase font-bold">Status</span>
-                        <div class="text-sm font-bold text-emerald-400 mt-2 flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span> Live Monitoring Active
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl space-y-6">
+                
+                <!-- GAME BROADCASTER CONTROLLER -->
+                <div class="bg-slate-900 p-5 rounded-xl border border-indigo-800/50 space-y-4">
+                    <h3 class="text-base font-bold text-indigo-400 flex items-center gap-2">
+                        <span>📡 Live Game PIN Broadcaster & Round Controller</span>
+                    </h3>
+                    <p class="text-xs text-slate-400">Selecting a round generates a unique 4-digit PIN and clears the live table for fresh records.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Select Difficulty Round:</label>
+                            <select id="teacherRoundSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100">
+                                <option value="easy">Easy Round</option>
+                                <option value="average">Average Round</option>
+                                <option value="difficult">Difficult Round</option>
+                            </select>
+                        </div>
+                        <button onclick="broadcastNewGameRound()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 px-4 rounded-lg text-xs transition">Generate Round & PIN</button>
+                        
+                        <!-- DISPLAY ACTIVE PIN & QR -->
+                        <div class="md:col-span-2 bg-slate-800 p-3 rounded-lg border border-slate-700 flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-bold">Active Game PIN</span>
+                                <div id="displayActivePin" class="text-xl font-mono font-black text-emerald-400">NONE</div>
+                            </div>
+                            <img id="displayRoundQR" src="" alt="QR" class="w-12 h-12 bg-white p-1 rounded border border-slate-600">
                         </div>
                     </div>
                 </div>
 
-                <!-- Submissions Table -->
-                <div class="overflow-x-auto border border-slate-700 rounded-xl">
-                    <table class="w-full text-left text-xs text-slate-300">
-                        <thead class="bg-slate-900 text-slate-400 uppercase font-bold border-b border-slate-700">
-                            <tr>
-                                <th class="p-3">Student Name</th>
-                                <th class="p-3">Grade & Section</th>
-                                <th class="p-3">Score</th>
-                                <th class="p-3">Percentage</th>
-                                <th class="p-3">Timestamp</th>
-                            </tr>
-                        </thead>
-                        <tbody id="dashboardTableBody" class="divide-y divide-slate-700">
-                            <!-- Populated via JS -->
-                        </tbody>
-                    </table>
+                <!-- LIVE STUDENT PROGRESS TABLE -->
+                <div>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                        <h3 class="text-base font-bold text-white">📊 Student Live Progress & Scores</h3>
+                        <div class="flex gap-2">
+                            <button onclick="loadDashboardData()" class="bg-slate-700 hover:bg-slate-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition">Refresh</button>
+                            <button onclick="clearDashboardData()" class="bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold py-2 px-3 rounded-lg transition">Clear Table</button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto border border-slate-700 rounded-xl">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-900 text-slate-400 uppercase font-bold border-b border-slate-700">
+                                <tr>
+                                    <th class="p-3">Student Name</th>
+                                    <th class="p-3">Email</th>
+                                    <th class="p-3">Round</th>
+                                    <th class="p-3">Score</th>
+                                    <th class="p-3">Percentage</th>
+                                    <th class="p-3">Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboardTableBody" class="divide-y divide-slate-700"></tbody>
+                        </table>
+                    </div>
                 </div>
+
             </div>
         </section>
 
@@ -256,8 +423,88 @@
         ConicMaster Teaching Device &bull; Accessible Online & Offline &bull; ₱0 Maintenance Cost
     </footer>
 
-    <!-- App Logic Script -->
+    <!-- Application Script -->
     <script>
+        let currentUser = null;
+        let pendingUser = null;
+        let generatedOTP = null;
+
+        // AUTHENTICATION SYSTEM
+        function switchAuthMode(mode) {
+            document.getElementById('formLogin').classList.toggle('hidden', mode !== 'login');
+            document.getElementById('formRegister').classList.toggle('hidden', mode !== 'register');
+            document.getElementById('formVerification').classList.add('hidden');
+
+            document.getElementById('btnAuthLogin').className = mode === 'login' ? "w-1/2 py-2 font-bold rounded-lg bg-indigo-600 text-white transition" : "w-1/2 py-2 font-bold rounded-lg text-slate-400 hover:text-white transition";
+            document.getElementById('btnAuthRegister').className = mode === 'register' ? "w-1/2 py-2 font-bold rounded-lg bg-indigo-600 text-white transition" : "w-1/2 py-2 font-bold rounded-lg text-slate-400 hover:text-white transition";
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const role = document.getElementById('regRole').value;
+            const password = document.getElementById('regPassword').value;
+
+            generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            pendingUser = { name, email, role, password };
+
+            document.getElementById('verifyEmailTarget').innerText = email;
+            document.getElementById('formRegister').classList.add('hidden');
+            document.getElementById('formVerification').classList.remove('hidden');
+
+            alert(`[SIMULATED EMAIL SYSTEM]\nYour verification code is: ${generatedOTP}`);
+        }
+
+        function confirmEmailOTP() {
+            const enteredOTP = document.getElementById('otpInput').value.trim();
+            if(enteredOTP === generatedOTP) {
+                let users = JSON.parse(localStorage.getItem('conicmaster_users') || '[]');
+                users.push(pendingUser);
+                localStorage.setItem('conicmaster_users', JSON.stringify(users));
+
+                alert("Email verified successfully! You can now sign in.");
+                switchAuthMode('login');
+            } else {
+                alert("Invalid verification code! Try again.");
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            let users = JSON.parse(localStorage.getItem('conicmaster_users') || '[]');
+            const found = users.find(u => u.email === email && u.password === password);
+
+            if(found) {
+                currentUser = found;
+                setupUserSession();
+            } else {
+                alert("Invalid email or password!");
+            }
+        }
+
+        function setupUserSession() {
+            document.getElementById('authOverlay').classList.add('hidden');
+            document.getElementById('userRoleBadge').innerText = currentUser.role.toUpperCase();
+            document.getElementById('userProfileLabel').innerText = `${currentUser.name} (${currentUser.email})`;
+
+            const teacherElements = document.querySelectorAll('.teacher-only');
+            teacherElements.forEach(el => {
+                el.classList.toggle('hidden', currentUser.role !== 'teacher');
+            });
+
+            switchTab('simulator');
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('authOverlay').classList.remove('hidden');
+            switchAuthMode('login');
+        }
+
         function switchTab(tabName) {
             ['simulator', 'lessons', 'quiz', 'dashboard'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
@@ -276,7 +523,7 @@
             }
         }
 
-        // Desmos Setup
+        // DESMOS SIMULATOR LOGIC
         var elt = document.getElementById('calculator');
         var calculator = Desmos.GraphingCalculator(elt, {
             expressions: false,
@@ -293,8 +540,8 @@
                 latex: '(x-h)^2 + (y-k)^2 = r^2',
                 display: '(x - h)² + (y - k)² = r²',
                 sliders: [
-                    { name: 'h', label: 'Center X (h)', min: -5, max: 5, step: 1, val: 0 },
-                    { name: 'k', label: 'Center Y (k)', min: -5, max: 5, step: 1, val: 0 },
+                    { name: 'h', label: 'Center X (h)', min: -5, max: 5, step: 1, val: 2 },
+                    { name: 'k', label: 'Center Y (k)', min: -5, max: 5, step: 1, val: -1 },
                     { name: 'r', label: 'Radius (r)', min: 1, max: 10, step: 1, val: 4 }
                 ]
             },
@@ -302,27 +549,27 @@
                 latex: '(y-k)^2 = 4*p*(x-h)',
                 display: '(y - k)² = 4p(x - h)',
                 sliders: [
-                    { name: 'h', label: 'Vertex X (h)', min: -5, max: 5, step: 1, val: 0 },
-                    { name: 'k', label: 'Vertex Y (k)', min: -5, max: 5, step: 1, val: 0 },
-                    { name: 'p', label: 'Focus Distance (p)', min: -4, max: 4, step: 0.5, val: 1 }
+                    { name: 'h', label: 'Vertex X (h)', min: -5, max: 5, step: 1, val: -1 },
+                    { name: 'k', label: 'Vertex Y (k)', min: -5, max: 5, step: 1, val: 2 },
+                    { name: 'p', label: 'Focus Distance (p)', min: -4, max: 4, step: 0.5, val: 1.5 }
                 ]
             },
             ellipse: {
                 latex: '\\frac{(x-h)^2}{a^2} + \\frac{(y-k)^2}{b^2} = 1',
                 display: '((x - h)² / a²) + ((y - k)² / b²) = 1',
                 sliders: [
-                    { name: 'h', label: 'Center X (h)', min: -5, max: 5, step: 1, val: 0 },
-                    { name: 'k', label: 'Center Y (k)', min: -5, max: 5, step: 1, val: 0 },
-                    { name: 'a', label: 'Semi-axis a', min: 1, max: 8, step: 0.5, val: 5 },
-                    { name: 'b', label: 'Semi-axis b', min: 1, max: 8, step: 0.5, val: 3 }
+                    { name: 'h', label: 'Center X (h)', min: -5, max: 5, step: 1, val: 1 },
+                    { name: 'k', label: 'Center Y (k)', min: -5, max: 5, step: 1, val: -2 },
+                    { name: 'a', label: 'Semi-axis a', min: 1, max: 8, step: 0.5, val: 4 },
+                    { name: 'b', label: 'Semi-axis b', min: 1, max: 8, step: 0.5, val: 2 }
                 ]
             },
             hyperbola: {
                 latex: '\\frac{(x-h)^2}{a^2} - \\frac{(y-k)^2}{b^2} = 1',
                 display: '((x - h)² / a²) - ((y - k)² / b²) = 1',
                 sliders: [
-                    { name: 'h', label: 'Center X (h)', min: -5, max: 5, step: 1, val: 0 },
-                    { name: 'k', label: 'Center Y (k)', min: -5, max: 5, step: 1, val: 0 },
+                    { name: 'h', label: 'Center X (h)', min: -5, max: 5, step: 1, val: -1 },
+                    { name: 'k', label: 'Center Y (k)', min: -5, max: 5, step: 1, val: -1 },
                     { name: 'a', label: 'Vertex distance a', min: 1, max: 6, step: 0.5, val: 3 },
                     { name: 'b', label: 'Conjugate axis b', min: 1, max: 6, step: 0.5, val: 2 }
                 ]
@@ -369,120 +616,130 @@
             loadConic(conicSelect.value);
         }
 
-        conicSelect.addEventListener('change', (e) => {
-            loadConic(e.target.value);
-        });
-
+        conicSelect.addEventListener('change', (e) => loadConic(e.target.value));
         loadConic('circle');
 
-        // Gamified Quiz Data & Logic
-        const quizBank = [
-            { q: "What is the center of the circle given by the equation: (x - 3)² + (y + 2)² = 25?", options: ["(3, -2)", "(-3, 2)", "(3, 2)", "(-3, -2)"], correct: 0 },
-            { q: "In an ellipse, what does parameter 'a' represent relative to major/minor axes?", options: ["Distance to directrix", "Length of semi-axis parallel to major axis", "Eccentricity ratio", "Distance to asymptotes"], correct: 1 },
-            { q: "Which conic section has an eccentricity (e) strictly equal to 1?", options: ["Ellipse", "Hyperbola", "Parabola", "Circle"], correct: 2 },
-            { q: "What differentiates the standard equation of a hyperbola from an ellipse?", options: ["A minus sign (-) between squared terms instead of a plus sign (+)", "The radius is squared", "The center is always at the origin", "There is no difference"], correct: 0 },
-            { q: "What is the radius of the circle given by x² + y² = 49?", options: ["7", "49", "14", "3.5"], correct: 0 },
-            { q: "What is the vertex of the parabola described by (y - 1)² = 8(x + 2)?", options: ["(1, -2)", "(-2, 1)", "(2, -1)", "(-1, 2)"], correct: 1 },
-            { q: "What is the value of eccentricity (e) for an ellipse?", options: ["e = 1", "e = 0", "0 < e < 1", "e > 1"], correct: 2 },
-            { q: "For hyperbola ((x - h)² / a²) - ((y - k)² / b²) = 1, what is the orientation of its transverse axis?", options: ["Vertical", "Horizontal", "Diagonal", "Circular"], correct: 1 },
-            { q: "What is the focal length parameter 'p' in parabola equation y² = 12x?", options: ["p = 3", "p = 12", "p = 4", "p = 6"], correct: 0 },
-            { q: "What is the center point of the ellipse ((x + 4)² / 9) + ((y - 5)² / 16) = 1?", options: ["(4, -5)", "(-4, 5)", "(3, 4)", "(-3, -4)"], correct: 1 },
-            { q: "What is the length of the major axis of an ellipse where parameter 'a' = 5?", options: ["5", "10", "25", "2.5"], correct: 1 },
-            { q: "The eccentricity of which conic section is always equal to 0?", options: ["Circle", "Parabola", "Ellipse", "Hyperbola"], correct: 0 },
-            { q: "What are the asymptotes of standard horizontal hyperbola equation?", options: ["y = ±(a/b)x", "y = ±(b/a)x", "y = ±ax", "y = ±bx"], correct: 1 },
-            { q: "In general second-degree equation, what condition defines a parabola?", options: ["B² - 4AC < 0", "B² - 4AC > 0", "B² - 4AC = 0", "A = C"], correct: 2 },
-            { q: "What is the directrix line equation for standard horizontal parabola y² = 4px at origin?", options: ["x = p", "x = -p", "y = p", "y = -p"], correct: 1 },
-            { q: "What is the sum of distances from any point on an ellipse to its two foci equal to?", options: ["2a", "a", "2c", "b"], correct: 0 }
-        ];
+        // TEACHER BROADCASTER & PIN LOGIC
+        let activeGameSession = null;
+
+        function broadcastNewGameRound() {
+            const round = document.getElementById('teacherRoundSelect').value;
+            const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+
+            activeGameSession = {
+                pin: newPin,
+                round: round
+            };
+
+            localStorage.setItem('conicmaster_active_session', JSON.stringify(activeGameSession));
+            localStorage.removeItem('conicmaster_submissions');
+
+            document.getElementById('displayActivePin').innerText = newPin;
+            document.getElementById('displayRoundQR').src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.href + '?pin=' + newPin)}`;
+
+            alert(`Broadcasting ${round.toUpperCase()} round! Game PIN is: ${newPin}. Previous dashboard table cleared for new entries.`);
+            loadDashboardData();
+        }
+
+        // QUIZ GAMEPLAY
+        const quizBanks = {
+            easy: [
+                { q: "What is the center of circle x² + y² = 25?", options: ["(0, 0)", "(5, 5)", "(0, 5)", "(25, 25)"], correct: 0 },
+                { q: "What is the radius of circle x² + y² = 49?", options: ["7", "49", "14", "3.5"], correct: 0 },
+                { q: "What is the center of (x - 3)² + (y + 2)² = 25?", options: ["(3, -2)", "(-3, 2)", "(3, 2)", "(-3, -2)"], correct: 0 },
+                { q: "What is the vertex of parabola y² = 8x?", options: ["(0, 0)", "(2, 0)", "(0, 2)", "(4, 4)"], correct: 0 },
+                { q: "Which conic section has eccentricity e = 0?", options: ["Circle", "Parabola", "Ellipse", "Hyperbola"], correct: 0 }
+            ],
+            average: [
+                { q: "What is the vertex of (y - 1)² = 8(x + 2)?", options: ["(-2, 1)", "(1, -2)", "(2, -1)", "(-1, 2)"], correct: 0 },
+                { q: "What is parameter 'p' in parabola y² = 12x?", options: ["p = 3", "p = 12", "p = 4", "p = 6"], correct: 0 },
+                { q: "What is the transverse axis orientation of ((x-h)²/a²) - ((y-k)²/b²) = 1?", options: ["Horizontal", "Vertical", "Diagonal", "Circular"], correct: 0 },
+                { q: "What is the eccentricity value (e) for an ellipse?", options: ["0 < e < 1", "e = 1", "e = 0", "e > 1"], correct: 0 }
+            ],
+            difficult: [
+                { q: "In Ax² + Bxy + Cy² + Dx + Ey + F = 0, what condition defines a parabola?", options: ["B² - 4AC = 0", "B² - 4AC < 0", "B² - 4AC > 0", "A = C"], correct: 0 },
+                { q: "What is the eccentricity of a hyperbola?", options: ["e > 1", "e = 1", "0 < e < 1", "e = 0"], correct: 0 },
+                { q: "Find focus distance (c) for an ellipse where a=5 and b=3.", options: ["c = 4", "c = 8", "c = 2", "c = √34"], correct: 0 }
+            ]
+        };
 
         let activeQuizQuestions = [];
         let currentQuestion = 0;
         let score = 0;
-        let studentName = "";
-        let studentSection = "";
 
-        function connectStudent() {
-            const nameInput = document.getElementById('studentNameInput').value.trim();
-            const sectionInput = document.getElementById('studentSectionInput').value.trim();
+        function verifyStudentGamePin() {
+            const inputPin = document.getElementById('gamePinInput').value.trim();
+            const session = JSON.parse(localStorage.getItem('conicmaster_active_session'));
 
-            if(!nameInput || !sectionInput) {
-                alert("Please enter both your name and section to connect!");
+            if(!session || inputPin !== session.pin) {
+                alert("Invalid or inactive Game PIN! Ask your teacher for the active PIN.");
                 return;
             }
 
-            studentName = nameInput;
-            studentSection = sectionInput;
-
-            document.getElementById('playerBadge').innerText = `Player: ${studentName} (${studentSection})`;
-            document.getElementById('connectionLobby').classList.add('hidden');
+            document.getElementById('studentPinGate').classList.add('hidden');
             document.getElementById('quizGameArea').classList.remove('hidden');
 
-            startNewQuizSession();
-            loadQuestion();
+            document.getElementById('playerBadge').innerText = `${currentUser.name} | Round: ${session.round.toUpperCase()}`;
+            
+            startQuizSession(session.round);
         }
 
-        function startNewQuizSession() {
-            let shuffled = [...quizBank].sort(() => Math.random() - 0.5);
-            activeQuizQuestions = shuffled.slice(0, 10);
+        function startQuizSession(round) {
+            let bank = quizBanks[round] || quizBanks.easy;
+            activeQuizQuestions = [...bank].sort(() => Math.random() - 0.5);
             currentQuestion = 0;
             score = 0;
+            loadQuestion();
         }
 
         function loadQuestion() {
             if(currentQuestion >= activeQuizQuestions.length) {
                 document.getElementById('quizContainer').classList.add('hidden');
                 document.getElementById('scoreScreen').classList.remove('hidden');
-                document.getElementById('finalScoreText').innerText = `${studentName} from ${studentSection}, you scored ${score} out of 10 correct!`;
+                document.getElementById('finalScoreText').innerText = `${currentUser.name}, you scored ${score} out of ${activeQuizQuestions.length}!`;
                 
-                // Save submission to localStorage for Teacher Dashboard tracking
-                saveQuizSubmission(studentName, studentSection, score);
+                saveQuizSubmission(currentUser.name, currentUser.email, score);
                 return;
             }
 
-            document.getElementById('quizProgress').innerText = `Question ${currentQuestion + 1} of 10`;
+            document.getElementById('quizProgress').innerText = `Question ${currentQuestion + 1} of ${activeQuizQuestions.length}`;
             const q = activeQuizQuestions[currentQuestion];
             document.getElementById('questionText').innerText = q.q;
 
             const optsContainer = document.getElementById('optionsContainer');
             optsContainer.innerHTML = '';
 
+            let optionsWithIndex = q.options.map((opt, idx) => ({ opt, isCorrect: idx === q.correct }));
+            optionsWithIndex.sort(() => Math.random() - 0.5);
+
             const colors = ['bg-rose-600 hover:bg-rose-500', 'bg-blue-600 hover:bg-blue-500', 'bg-amber-600 hover:bg-amber-500', 'bg-emerald-600 hover:bg-emerald-500'];
 
-            q.options.forEach((opt, idx) => {
+            optionsWithIndex.forEach((item, idx) => {
                 const btn = document.createElement('button');
                 btn.className = `${colors[idx]} text-white p-4 rounded-xl font-semibold text-xs text-left shadow transition transform active:scale-98`;
-                btn.innerText = opt;
-                btn.onclick = () => selectAnswer(idx);
+                btn.innerText = item.opt;
+                btn.onclick = () => {
+                    if(item.isCorrect) score++;
+                    currentQuestion++;
+                    loadQuestion();
+                };
                 optsContainer.appendChild(btn);
             });
         }
 
-        function selectAnswer(selectedIdx) {
-            const q = activeQuizQuestions[currentQuestion];
-            if(selectedIdx === q.correct) {
-                score++;
-            }
-            currentQuestion++;
-            loadQuestion();
-        }
-
-        function restartQuizSession() {
-            document.getElementById('scoreScreen').classList.add('hidden');
-            document.getElementById('quizContainer').classList.remove('hidden');
-            startNewQuizSession();
-            loadQuestion();
-        }
-
-        // Teacher Dashboard Analytics & Storage Functions
-        function saveQuizSubmission(name, section, finalScore) {
+        // TEACHER DASHBOARD TRACKING
+        function saveQuizSubmission(name, email, finalScore) {
+            const session = JSON.parse(localStorage.getItem('conicmaster_active_session')) || { round: 'EASY' };
             let submissions = JSON.parse(localStorage.getItem('conicmaster_submissions') || '[]');
-            const record = {
+            
+            submissions.unshift({
                 name: name,
-                section: section,
+                email: email,
+                round: session.round.toUpperCase(),
                 score: finalScore,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-            };
-            submissions.unshift(record); // Add to top
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+
             localStorage.setItem('conicmaster_submissions', JSON.stringify(submissions));
         }
 
@@ -491,37 +748,27 @@
             const tbody = document.getElementById('dashboardTableBody');
             tbody.innerHTML = '';
 
-            let totalSubmissions = submissions.length;
-            let totalScoreSum = 0;
-
-            if(totalSubmissions === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500">No student submissions recorded yet. Ask students to complete the live quiz!</td></tr>`;
+            if(submissions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">No student submissions recorded for this active round.</td></tr>`;
             } else {
                 submissions.forEach(sub => {
-                    totalScoreSum += sub.score;
-                    let percentage = ((sub.score / 10) * 100).toFixed(0);
-                    let badgeColor = percentage >= 75 ? 'text-emerald-400' : (percentage >= 50 ? 'text-amber-400' : 'text-rose-400');
-                    
                     const tr = document.createElement('tr');
                     tr.className = 'hover:bg-slate-900/50';
                     tr.innerHTML = `
                         <td class="p-3 font-semibold text-white">${sub.name}</td>
-                        <td class="p-3 text-slate-400">${sub.section}</td>
-                        <td class="p-3 font-bold text-indigo-300">${sub.score} / 10</td>
-                        <td class="p-3 font-bold ${badgeColor}">${percentage}%</td>
+                        <td class="p-3 text-slate-400">${sub.email}</td>
+                        <td class="p-3 font-bold text-indigo-300">${sub.round}</td>
+                        <td class="p-3 font-bold text-indigo-300">${sub.score}</td>
+                        <td class="p-3 font-bold text-emerald-400">${((sub.score / 5) * 100).toFixed(0)}%</td>
                         <td class="p-3 text-slate-500">${sub.timestamp}</td>
                     `;
                     tbody.appendChild(tr);
                 });
             }
-
-            document.getElementById('statTotal').innerText = totalSubmissions;
-            let avg = totalSubmissions > 0 ? (totalScoreSum / totalSubmissions).toFixed(1) : 0;
-            document.getElementById('statAvg').innerText = `${avg} / 10`;
         }
 
         function clearDashboardData() {
-            if(confirm("Are you sure you want to clear all student quiz records from this dashboard?")) {
+            if(confirm("Are you sure you want to clear the student records for this round?")) {
                 localStorage.removeItem('conicmaster_submissions');
                 loadDashboardData();
             }
